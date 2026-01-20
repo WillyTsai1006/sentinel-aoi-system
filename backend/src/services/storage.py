@@ -41,5 +41,21 @@ class StorageService:
             print(f"Upload Failed: {e}")
             raise e
 
-# 建立一個全域實例供 API 使用
-storage_client = StorageService()
+# 定義一個全域變數來存放單例，但初始為 None
+_storage_client_instance = None
+
+def get_storage_client():
+    """
+    延遲初始化 StorageClient。
+    只有在第一次被呼叫時才會嘗試連線 MinIO。
+    """
+    global _storage_client_instance
+    if _storage_client_instance is None:
+        try:
+            _storage_client_instance = StorageService()
+        except Exception as e:
+            # 這裡捕捉錯誤是為了讓測試在沒有 MinIO 的環境下也能 import 成功
+            # 但在實際運作中，呼叫端會拿到 None，需要處理
+            print(f"Warning: Could not initialize MinIO client: {e}")
+            return None
+    return _storage_client_instance

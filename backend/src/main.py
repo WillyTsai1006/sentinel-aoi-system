@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from .services.storage import storage_client
+from .services.storage import get_storage_client
 from .config import settings
 import uuid
 from .tasks import detect_image_task  # 新增: 匯入任務函式
@@ -27,6 +27,11 @@ async def upload_and_detect(file: UploadFile = File(...)):
     2. 上傳至 MinIO
     3. (下一階段) 發送任務給 AI
     """
+    # 1. 取得 Storage Client (延遲初始化)
+    storage_client = get_storage_client()
+    # 2. 檢查連線狀態 (如果是 None 代表 MinIO 連線失敗)
+    if storage_client is None:
+        raise HTTPException(status_code=503, detail="Storage service is unavailable")
     try:
         # 讀取檔案內容
         file_content = await file.read()
@@ -34,11 +39,8 @@ async def upload_and_detect(file: UploadFile = File(...)):
         file_extension = file.filename.split(".")[-1]
         unique_filename = f"{uuid.uuid4()}.{file_extension}"
         # 上傳到 MinIO
-        storage_path = storage_client.upload_file(
-            file_data=file_content,
-            file_name=unique_filename,
-            content_type=file.content_type
-        )
+        # 使用取得的 instance 呼叫方法
+        storage_path = storage_client.upload_file(file_content, unique_filename, file.content_type)
         # 發送非同步任務到 Celery 
         # .delay() 會將任務丟進 Redis 就立刻回傳，不會卡住
         task = detect_image_task.delay(unique_filename, storage_path, time.time())
