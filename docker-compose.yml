@@ -1,0 +1,138 @@
+services:
+  # 1. 資料庫 (存檢測結果 metadata)
+  db:
+    image: postgres:15-alpine
+    container_name: sentinel_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - sentinel_net
+
+  # 2. 物件儲存 (存原始圖片)
+  minio:
+    image: minio/minio
+    container_name: sentinel_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - sentinel_net
+
+  # 3. 消息隊列
+  redis:
+    image: redis:alpine
+    container_name: sentinel_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - sentinel_net
+
+  # 4. 後端 API
+  backend:
+    build: ./backend
+    container_name: sentinel_backend
+    restart: always
+    # --- 修改這裡：加入 --workers 4 ---
+    # 這樣會有 4 個 Process：3 個負責接客(上傳圖片)，1 個有空就能回應監控(metrics)
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --workers 4
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      - minio
+      - redis
+      - db
+    networks:
+      - sentinel_net
+
+  # 5. AI Worker (已修復：加入 env_file 以讀取 DB 設定)
+  worker:
+    build: ./backend
+    container_name: sentinel_worker
+    restart: always
+    command: celery -A src.tasks worker --loglevel=info --pool=solo -E
+    # 這裡加入 env_file，讓 Worker 也能拿到 DB_USER, DB_PASSWORD 等設定
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      # 明確指定 MinIO 內部連線位置
+      - MINIO_ENDPOINT=minio:9000
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+      - db  # Worker 也要等 DB 啟動
+    networks:
+      - sentinel_net
+  
+  # 6. 前端戰情室
+  frontend:
+    build: ./frontend
+    container_name: sentinel_frontend
+    restart: always
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    networks:
+      - sentinel_net
+
+  # 7. 監控核心 Prometheus (已修復縮排：向左對齊)
+  prometheus:
+    image: prom/prometheus
+    container_name: sentinel_prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - sentinel_net
+
+  # 8. 視覺化看板 Grafana (已修復縮排)
+  grafana:
+    image: grafana/grafana
+    container_name: sentinel_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    networks:
+      - sentinel_net
+
+  # 9. Celery 監控轉接器 (已修復縮排)
+  celery-exporter:
+    image: danihodovic/celery-exporter
+    container_name: sentinel_celery_exporter
+    command: --broker-url=redis://redis:6379/0
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    ports:
+      - "9808:9808"
+    depends_on:
+      - redis
+    networks:
+      - sentinel_net
+
+networks:
+  sentinel_net:
+    driver: bridge

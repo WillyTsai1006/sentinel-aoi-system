@@ -1,0 +1,36 @@
+# 核心框架
+fastapi==0.109.0
+uvicorn==0.27.0
+python-multipart
+pydantic-settings
+
+# 非同步任務與快取
+celery==5.3.6
+redis==5.0.1
+
+# 資料庫與儲存
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+minio==7.2.3
+
+# --- AI 核心 (黃金組合) ---
+# 1. 鎖定 NumPy < 2.0 (避免 NumPy 2.0 災情)
+numpy<2.0.0
+
+# 2. 指定 CPU 版本來源
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# 3. 使用 PyTorch 2.5.1 (甜蜜點：支援新模型，且不會預設開啟嚴格安全檢查)
+torch==2.5.1
+torchvision==0.20.1
+
+# 4. 使用最新的 Ultralytics (修正了載入邏輯)
+ultralytics>=8.3.0
+opencv-python-headless
+pillow
+# ------------------------
+
+# 監控與測試
+prometheus-fastapi-instrumentator
+pytest
+httpx

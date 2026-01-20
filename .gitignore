@@ -1,0 +1,26 @@
+# 1. 系統與環境變數 (絕對不能上傳！)
+.env
+.env.*
+*.local
+
+# 2. Python 編譯檔與快取 (垃圾檔)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 3. Docker 相關
+.docker/
+
+# 4. IDE 設定檔 (別人的電腦不需要你的 VSCode/PyCharm 設定)
+.idea/
+.vscode/
+*.swp
+
+# 5. 資料與模型 (視情況而定)
+# 如果你的 weights/best.pt 很大 (>100MB)，GitHub 會拒收，建議忽略
+data/  
+datasets/
+weights/*.pt 
