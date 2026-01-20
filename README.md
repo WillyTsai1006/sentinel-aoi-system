@@ -1,6 +1,6 @@
 # Sentinel-AOI: 工業級自動光學檢測系統 (Enterprise AI Inspection System)
 
-![CI Status](https://github.com/YOUR_USERNAME/sentinel_aoi/actions/workflows/ci.yml/badge.svg) ![Python](https://img.shields.io/badge/Python-3.10-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green) ![Docker](https://img.shields.io/badge/Docker-Microservices-2496ED) ![Prometheus](https://img.shields.io/badge/Observability-Prometheus-orange)
+![CI Status](https://github.com/WillyTsai1006/sentinel_aoi/actions/workflows/ci.yml/badge.svg) ![Python](https://img.shields.io/badge/Python-3.10-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green) ![Docker](https://img.shields.io/badge/Docker-Microservices-2496ED) ![Prometheus](https://img.shields.io/badge/Observability-Prometheus-orange)
 
 ## 📖 專案簡介 (Introduction)
 Sentinel-AOI 是一個模擬半導體與鋼鐵製造業場景的 **微服務架構 (Microservices)** 檢測系統。
@@ -51,6 +51,7 @@ graph TD
 
 ## 🛠️ 技術堆疊 (Tech Stack)
 | Component | Technology | Description | 
+| --------- | ---------- | ----------- |
 | Backend | FastAPI | 高效能非同步 Web 框架，整合 prometheus-instrumentator。 |
 | AI Engine | YOLOv8 | 客製化訓練 (Fine-tuned) 模型，針對 NEU-DET 鋼材瑕疵檢測。 |
 | Queue | Celery + Redis | 實作非同步任務處理與 TTL 背壓丟包機制。 |
@@ -88,7 +89,7 @@ ETL 腳本與訓練紀錄位於 scripts/ 目錄中。
 
 - Runner Stage: 僅複製編譯好的 Python 套件與 Runtime。
 
-- 效益: 映像檔體積縮減 40%，並移除編譯器以提升安全性。
+- 效益: 映像檔體積縮減 10%，並移除編譯器以提升安全性。
 
 
 ## 📂 專案結構 (Project Structure)
