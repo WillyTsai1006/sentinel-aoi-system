@@ -1,6 +1,6 @@
 # Sentinel-AOI: 工業級自動光學檢測系統 (Enterprise AI Inspection System)
 
-![CI Status](https://github.com/WillyTsai1006/sentinel_aoi/actions/workflows/ci.yml/badge.svg) ![Python](https://img.shields.io/badge/Python-3.10-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green) ![Docker](https://img.shields.io/badge/Docker-Microservices-2496ED) ![Prometheus](https://img.shields.io/badge/Observability-Prometheus-orange)
+![CI Status](https://github.com/WillyTsai1006/sentinel-aoi-system/actions/workflows/ci.yml/badge.svg) ![Python](https://img.shields.io/badge/Python-3.10-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green) ![Docker](https://img.shields.io/badge/Docker-Microservices-2496ED) ![Prometheus](https://img.shields.io/badge/Observability-Prometheus-orange)
 
 ## 📖 專案簡介 (Introduction)
 Sentinel-AOI 是一個模擬半導體與鋼鐵製造業場景的 **微服務架構 (Microservices)** 檢測系統。
