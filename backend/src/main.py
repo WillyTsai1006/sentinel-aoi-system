@@ -11,6 +11,7 @@ import time
 from prometheus_fastapi_instrumentator import Instrumentator # 新增
 # 新增 import init_db
 from .models import init_db
+from contextlib import asynccontextmanager
 # 新增 lifespan 處理啟動事件
 @asynccontextmanager
 async def lifespan(app: FastAPI):
