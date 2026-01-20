@@ -33,4 +33,4 @@ pillow
 # 監控與測試
 prometheus-fastapi-instrumentator
 pytest
-httpx
+httpx==0.27.2
