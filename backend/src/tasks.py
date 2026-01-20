@@ -1,6 +1,6 @@
 from celery import Task
 from .celery_app import celery_app
-from .services.storage import storage_client
+from .services.storage import get_storage_client
 from .models import SessionLocal, InspectionResult, init_db
 from ultralytics import YOLO
 import cv2
@@ -35,6 +35,10 @@ except Exception as e:
 
 @celery_app.task(name="detect_task", bind=True, time_limit=60)
 def detect_image_task(self, file_name: str, storage_path: str, created_at_ts: float):
+    storage_client = get_storage_client()
+    if not storage_client:
+        # 處理重試或錯誤
+        raise Exception("MinIO connection failed")
     # 1. 背壓檢查 (Backpressure Check)
     # 如果這張圖已經在 Queue 裡排隊超過 5 秒，就算算出來也沒意義了，直接丟棄
     now = datetime.utcnow().timestamp()
@@ -53,7 +57,7 @@ def detect_image_task(self, file_name: str, storage_path: str, created_at_ts: fl
         print(f"📦 解析結果: bucket={bucket_name}, object={object_name}")
         # 測試連接
         try:
-            exists = storage_client.client.bucket_exists(bucket_name)
+            exists = storage_client.bucket_exists(bucket_name)
             print(f"🔍 Bucket 存在: {exists}")
             if not exists:
                 return {"status": "error", "reason": f"Bucket 不存在: {bucket_name}"}
@@ -62,7 +66,7 @@ def detect_image_task(self, file_name: str, storage_path: str, created_at_ts: fl
             return {"status": "error", "reason": f"Bucket 檢查失敗: {str(e)}"}
         # 下載對象
         print(f"⬇️ 開始下載...")
-        response = storage_client.client.get_object(bucket_name, object_name)
+        response = storage_client.get_object(bucket_name, object_name)
         print(f"✅ 獲取響應成功")
         # 讀取數據
         data = response.read()
