@@ -28,12 +28,12 @@ jobs:
       env:
         # 給定測試用的假環境變數，避免程式因為找不到 .env 報錯
         DB_USER: admin
-        DB_PASSWORD: password
+        DB_PASSWORD: secret_password
         DB_NAME: test_db
         DB_HOST: localhost
         MINIO_ENDPOINT: localhost:9000
-        MINIO_USER: minio
-        MINIO_PASSWORD: password
+        MINIO_USER: minio_admin
+        MINIO_PASSWORD: minio_secret
         REDIS_URL: redis://localhost:6379/0
       run: |
         # 設定 PYTHONPATH 讓測試程式找得到 src
