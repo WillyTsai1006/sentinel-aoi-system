@@ -14,8 +14,6 @@ import torch.serialization
 from ultralytics.nn.tasks import DetectionModel
 # 添加安全全局變量
 torch.serialization.add_safe_globals([DetectionModel])
-# 初始化 DB (確保 Table 存在)
-init_db()
 MODEL_PATH = "weights/best.pt"  # 相對路徑
 # 檢查模型是否存在，如果不存在就退回通用模型 (防呆)
 if not os.path.exists(MODEL_PATH):

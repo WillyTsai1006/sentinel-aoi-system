@@ -9,8 +9,25 @@ from .models import SessionLocal, InspectionResult
 import json
 import time
 from prometheus_fastapi_instrumentator import Instrumentator # 新增
-
-app = FastAPI(title=settings.PROJECT_NAME)
+# 新增 import init_db
+from .models import init_db
+# 新增 lifespan 處理啟動事件
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # [啟動時執行]
+    try:
+        # 嘗試連線資料庫並建立 Table
+        print("Initializing database...")
+        init_db()
+        print("Database initialized successfully.")
+    except Exception as e:
+        # 如果是測試環境沒 DB，捕捉錯誤印出警告，不要讓 App 崩潰
+        print(f"WARNING: Database initialization failed (Ignored for tests): {e}")
+    yield  # 應用程式開始運作
+    # [關閉時執行] (目前不需要做什麼)
+    pass
+# 在 FastAPI 初始化時加入 lifespan
+app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 # 初始化 Prometheus 監控
 # 這會自動建立一個 /metrics 接口，收集所有 API 的 Latency 和 Status Code
 Instrumentator().instrument(app).expose(app)
