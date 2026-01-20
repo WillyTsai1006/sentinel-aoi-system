@@ -138,7 +138,7 @@ sentinel_aoi/
 ```Bash
 
 # 1. Clone 專案
-git clone [https://github.com/YOUR_USERNAME/sentinel_aoi.git](https://github.com/YOUR_USERNAME/sentinel_aoi.git)
+git clone https://github.com/WillyTsai1006/sentinel-aoi-system.git
 cd sentinel_aoi
 
 # 2. 建立環境變數檔
