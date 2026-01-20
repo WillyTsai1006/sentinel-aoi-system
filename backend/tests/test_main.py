@@ -3,9 +3,8 @@ from unittest.mock import patch, MagicMock
 from src.main import app
 
 client = TestClient(app)
-# --- 修改 Mock 目標 ---
-@patch("src.main.get_storage_client")  # Mock 獲取 Client 的函數
-@patch("src.main.celery_app.send_task") # 注意：這裡根據你的實作，可能是 celery_app.send_task 或 task.delay
+@patch("src.main.get_storage_client")
+@patch("src.main.celery_app.send_task")
 def test_upload_and_detect(mock_send_task, mock_get_storage_client):
     # 1. 設定 Mock Storage 行為
     mock_storage_instance = MagicMock()
@@ -21,7 +20,15 @@ def test_upload_and_detect(mock_send_task, mock_get_storage_client):
     response = client.post("/api/v1/detect", files=files)
     # 4. 驗證結果
     assert response.status_code == 200
-    assert response.json() == {"task_id": "test-task-id-123", "status": "processing"}
+    resp_json = response.json()
+    # 驗證 Task ID 正確
+    assert resp_json["task_id"] == "test-task-id-123"
+    # 驗證 Status 是 'received' (修正原本的 'processing')
+    assert resp_json["status"] == "received"
+    # 驗證訊息正確
+    assert resp_json["message"] == "Image queued for processing"
+    # 驗證有包含 filename 欄位 (因為是隨機 UUID，只要檢查有這個欄位即可)
+    assert "filename" in resp_json
     # 驗證是否正確呼叫
-    mock_get_storage_client.assert_called() # 確認有呼叫 getter
+    mock_get_storage_client.assert_called()
     mock_storage_instance.upload_file.assert_called_once()
